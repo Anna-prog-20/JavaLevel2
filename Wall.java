@@ -8,10 +8,14 @@ public class Wall implements Obstacle{
     public int getHeight() {
         return height;
     }
+
+    @Override
+    public void doObstcle(Members members) {
+        jump(members);
+    }
+
     public void jump(Members members){
         members.jump(height);
     }
-    public void run(Members members){
 
-    }
 }

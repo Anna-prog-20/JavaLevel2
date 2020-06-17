@@ -8,9 +8,13 @@ public class Racetrack implements Obstacle{
         this.length = length;
     }
 
+    @Override
+    public void doObstcle(Members members) {
+        run(members);
+    }
+
     public void run(Members members){
         members.run(length);
     }
-    public void jump(Members members){
-    }
+
 }

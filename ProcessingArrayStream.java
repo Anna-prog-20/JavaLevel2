@@ -13,18 +13,8 @@ public class ProcessingArrayStream {
         float[] a2=new float[half];
         System.out.println("Второй метод: ");
         arr=setData(arr);
-
-        StreamSynch streamSynch=new StreamSynch(arr,a1,a2,half);
-
-        StreamCopy streamCopy=new StreamCopy(streamSynch);
-        StreamThread streamThread=new StreamThread(streamSynch);
-        StreamPaste streamPaste=new StreamPaste(streamSynch);
-
-        new Thread(streamCopy).start();
-        new Thread(streamThread).start();
-        new Thread(streamPaste).start();
-        System.out.println(a1[a1.length-1]);
-
+        new Thread(new StreamThread(arr,a1,0,half,"1")).start();
+        new Thread(new StreamThread(arr,a2,half,half,"2")).start();
     }
 
     static public float[] setData(float arr[]){

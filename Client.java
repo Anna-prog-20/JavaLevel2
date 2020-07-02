@@ -22,12 +22,7 @@ public class Client {
         }
         System.out.println("Поехали общаться!");
 
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                new Thread(new ReadMessage("Сервер",socket,in)).start();
-                new Thread(new WhriteMessage(socket,out)).start();
-            }
-        }).start();
+        new Thread(new ReadMessage("Сервер",socket,in)).start();
+        new Thread(new WhriteMessage(socket,out)).start();
     }
 }

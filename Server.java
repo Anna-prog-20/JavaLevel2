@@ -26,14 +26,8 @@ public class Server {
 
             in = new DataInputStream(socket.getInputStream());
             out = new DataOutputStream(socket.getOutputStream());
-                new Thread(new Runnable() {
-                        @Override
-                        public void run() {
-                            new Thread(new ReadMessage("Клиент", socket, in)).start();
-                            new Thread(new WhriteMessage(socket, out)).start();
-
-                        }
-                    }).start();
+                new Thread(new ReadMessage("Клиент", socket, in)).start();
+                new Thread(new WhriteMessage(socket, out)).start();
 
         } catch (IOException e) {
             e.printStackTrace();

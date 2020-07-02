@@ -19,8 +19,12 @@ public class ReadMessage implements Runnable{
             String message="";
             while (!(message.equals("/end"))) {
                 message = in.readUTF();
-                System.out.println(name+":"+message);
+                if (message.equals("/end"))
+                    System.out.println(name+": Пока!");
+                else
+                    System.out.println(name+":"+message);
             }
+
         }catch (IOException e){e.printStackTrace();}
     }
 

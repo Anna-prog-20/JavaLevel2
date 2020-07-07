@@ -11,6 +11,7 @@ public class ClientHandler{
     private DataOutputStream out;
     private String name;
 
+
     public ClientHandler(Server server, Socket socket) {
         try {
             this.server = server;
@@ -19,20 +20,23 @@ public class ClientHandler{
             this.out = new DataOutputStream(socket.getOutputStream());
             this.name = "";
 
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                                doAuth();
-                                readMessage();
 
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    } finally {
-                        closeConnection();
+
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            doAuth();
+                            readMessage();
+
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        } finally {
+                            closeConnection();
+                        }
                     }
-                }
-            }).start();
+                }).start();
+
 
         } catch (IOException e) {
             throw new RuntimeException("Произошла ошибка во время инициализации клиента");

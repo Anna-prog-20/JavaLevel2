@@ -20,8 +20,8 @@ public class Client extends JFrame {
     private JTextField msgInputField,loginField,passField;
     private JTextArea chatArea;
 
-    private long a;
-    private String incomeMessage;
+    private long a,time;
+    private String incomeMessage="";
 
     public static void main(String[] args) {
         new Thread(new Runnable() {
@@ -52,8 +52,6 @@ public class Client extends JFrame {
     }
 
     public void start() {
-        //System.out.println(String.valueOf(System.currentTimeMillis()/1000L));
-
         try {
             socket = new Socket(SERVER_ADDR, SERVER_PORT);
             in = new DataInputStream(socket.getInputStream());
@@ -62,38 +60,58 @@ public class Client extends JFrame {
             e.printStackTrace();
         }
         a=System.currentTimeMillis()/1000L;
-            Thread thread=new Thread(new Runnable() {
+            new Thread(new Runnable() {
             @Override
             public void run() {
-                try {
-                    while (true) {
-                       incomeMessage = in.readUTF();
-                       //System.out.println(System.currentTimeMillis()/1000L-a);
-                       if(incomeMessage.startsWith("/authok")) {
-                            chatArea.append("Вы успешно авторизовались!");
-                            chatArea.append("\n");
-                            break;
-                        }
-                        chatArea.append(incomeMessage);
-                        chatArea.append("\n");
-                    }
-                    while (true) {
-                        incomeMessage = in.readUTF();
-                        if (incomeMessage.equalsIgnoreCase("/end")) {
-                            break;
-                        }
-                        chatArea.append(incomeMessage);
-                        chatArea.append("\n");
-                    }
+                        time=System.currentTimeMillis()/1000L-a;
 
+                                new Thread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        while (time>=0) {
+                                            time = System.currentTimeMillis() / 1000L - a;
+                                            if (time>120&!incomeMessage.startsWith("/authok")){
+                                                Client.super.dispose();
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }).start();
+                                new Thread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        while (true) {
+                                            try {
+                                                if (time>120) break;
 
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+                                                incomeMessage = in.readUTF();
+                                                if (incomeMessage.startsWith("/authok")) {
+                                                    chatArea.append("Вы успешно авторизовались!");
+                                                    chatArea.append("\n");
+                                                    break;
+                                                }
+
+                                                chatArea.append(incomeMessage);
+                                                chatArea.append("\n");
+                                            } catch (IOException e) {
+                                                e.printStackTrace();
+                                            }
+                                        }
+                                        while (true) {
+                                            try {
+                                                incomeMessage = in.readUTF();
+                                                if (incomeMessage.equalsIgnoreCase("/end")) {
+                                                    break;
+                                                }
+                                                chatArea.append(incomeMessage);
+                                                chatArea.append("\n");
+                                            }catch (IOException e){e.printStackTrace();}
+                                        }
+                                    }
+                                }).start();
             }
-        });
-            thread.setDaemon(true);
-            thread.start();
+        }).start();
+
     }
 
     public void send() {
@@ -178,9 +196,7 @@ public class Client extends JFrame {
                 onAuthClick();
             }
         });
-        //System.out.println(String.valueOf(System.currentTimeMillis()/1000L));
 
-        //auth.doClick(30);
 
         // Настраиваем действие на закрытие окна
         addWindowListener(new WindowAdapter() {
@@ -204,7 +220,6 @@ public class Client extends JFrame {
             start();
         }
         try {
-            //System.out.println(String.valueOf(System.currentTimeMillis()/1000L));
             out.writeUTF("/auth " + loginField.getText() + " " + passField.getText());
             loginField.setText("");
             passField.setText("");
@@ -217,20 +232,12 @@ public class Client extends JFrame {
 
         try {
             in.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        try {
             out.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        try {
             socket.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            //e.printStackTrace();
         }
-        super.dispose();
+            //super.dispose();
     }
 
 }

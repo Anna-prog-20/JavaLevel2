@@ -9,7 +9,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 
-public class Client extends JFrame  {
+public class Client extends JFrame {
     private static final String SERVER_ADDR = "localhost";
     private static final int SERVER_PORT = 8189;
 
@@ -17,8 +17,11 @@ public class Client extends JFrame  {
     private DataOutputStream out;
     private Socket socket;
 
-    private JTextField msgInputField;
+    private JTextField msgInputField,loginField,passField;
     private JTextArea chatArea;
+
+    private long a;
+    private String incomeMessage;
 
     public static void main(String[] args) {
         new Thread(new Runnable() {
@@ -49,6 +52,8 @@ public class Client extends JFrame  {
     }
 
     public void start() {
+        //System.out.println(String.valueOf(System.currentTimeMillis()/1000L));
+
         try {
             socket = new Socket(SERVER_ADDR, SERVER_PORT);
             in = new DataInputStream(socket.getInputStream());
@@ -56,25 +61,39 @@ public class Client extends JFrame  {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-            new Thread(new Runnable() {
+        a=System.currentTimeMillis()/1000L;
+            Thread thread=new Thread(new Runnable() {
             @Override
             public void run() {
-                String incomeMessage ="";
                 try {
-                    while (!(incomeMessage.equalsIgnoreCase("/end"))) {
-                        System.out.println("Ожидание сообщения");
-                        incomeMessage = in.readUTF();
+                    while (true) {
+                       incomeMessage = in.readUTF();
+                       //System.out.println(System.currentTimeMillis()/1000L-a);
+                       if(incomeMessage.startsWith("/authok")) {
+                            chatArea.append("Вы успешно авторизовались!");
+                            chatArea.append("\n");
+                            break;
+                        }
                         chatArea.append(incomeMessage);
                         chatArea.append("\n");
                     }
+                    while (true) {
+                        incomeMessage = in.readUTF();
+                        if (incomeMessage.equalsIgnoreCase("/end")) {
+                            break;
+                        }
+                        chatArea.append(incomeMessage);
+                        chatArea.append("\n");
+                    }
+
 
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
-        })
-                .start();
+        });
+            thread.setDaemon(true);
+            thread.start();
     }
 
     public void send() {
@@ -95,7 +114,7 @@ public class Client extends JFrame  {
         setBounds(600, 200, 500, 400);
         setTitle("Клиент");
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-
+        setLayout(new GridLayout(3,1));
         // Текстовое поле для вывода сообщений
         chatArea = new JTextArea();
         chatArea.setEditable(false);
@@ -123,6 +142,46 @@ public class Client extends JFrame  {
             }
         });
 
+        // панель авторизации
+        JPanel authPanel = new JPanel(new BorderLayout());
+        JButton auth = new JButton("Авторизоваться");
+        authPanel.setLayout(new BoxLayout(authPanel,BoxLayout.X_AXIS));
+
+        loginField = new JTextField();
+        passField = new JTextField();
+
+        JLabel login=new JLabel("Логин: ");
+        JLabel pas=new JLabel("Пароль: ");
+
+        add(authPanel);
+        authPanel.add(login);
+        authPanel.add(loginField);
+        authPanel.add(pas);
+        authPanel.add(passField);
+        authPanel.add(auth);
+        auth.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+
+                onAuthClick();
+            }
+        });
+        loginField.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                onAuthClick();
+            }
+        });
+        passField.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                onAuthClick();
+            }
+        });
+        //System.out.println(String.valueOf(System.currentTimeMillis()/1000L));
+
+        //auth.doClick(30);
+
         // Настраиваем действие на закрытие окна
         addWindowListener(new WindowAdapter() {
             @Override
@@ -140,7 +199,21 @@ public class Client extends JFrame  {
         setVisible(true);
     }
 
-    public void close() {
+    public void onAuthClick() {
+        if (socket == null || socket.isClosed()) {
+            start();
+        }
+        try {
+            //System.out.println(String.valueOf(System.currentTimeMillis()/1000L));
+            out.writeUTF("/auth " + loginField.getText() + " " + passField.getText());
+            loginField.setText("");
+            passField.setText("");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+        public void close() {
 
         try {
             in.close();

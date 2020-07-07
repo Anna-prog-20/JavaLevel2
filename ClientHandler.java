@@ -10,7 +10,6 @@ public class ClientHandler{
     private DataInputStream in;
     private DataOutputStream out;
     private String name;
-    //private long time;
 
     public ClientHandler(Server server, Socket socket) {
         try {
@@ -24,14 +23,9 @@ public class ClientHandler{
                 @Override
                 public void run() {
                     try {
-                        //time = System.currentTimeMillis()/1000L;
-                        doAuth();
-                        //                        long time=System.currentTimeMillis()/1000L-a;
-//                        server.broadcastMessage(String.valueOf(time));
-//                        if (time>30){
-//                            server.broadcastMessage(String.valueOf(time));
-//                        }
-                        readMessage();
+                                doAuth();
+                                readMessage();
+
                     } catch (IOException e) {
                         e.printStackTrace();
                     } finally {
@@ -39,6 +33,7 @@ public class ClientHandler{
                     }
                 }
             }).start();
+
         } catch (IOException e) {
             throw new RuntimeException("Произошла ошибка во время инициализации клиента");
         }
@@ -50,8 +45,11 @@ public class ClientHandler{
     }
 
     public void doAuth() throws IOException {
+        //long a=System.currentTimeMillis()/1000L;
+        String str="";
         while (true) {
-            String str = in.readUTF();
+            str = in.readUTF();
+
             if (str.startsWith("/auth")) {
                 String[] parts = str.split("\\s");
                 String nickname = server.getAuthService().getNickByLoginAndPass(parts[1], parts[2]);

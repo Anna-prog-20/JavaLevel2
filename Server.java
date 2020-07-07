@@ -28,10 +28,8 @@ public class Server {
                 System.out.println("Сервер запущен, порт: " + port);
                 System.out.println("Ожидаю подключения клиента...");
                 Socket socket = server.accept();
-                //long a = System.currentTimeMillis()/1000L;
                 System.out.println(String.format("Клиент подключился: %s", socket.toString()));
                 ClientHandler clientHandler=new ClientHandler(this, socket);
-                //System.out.println(String.valueOf(a-clientHandler.getTime()));
             }
         } catch (IOException e) {
             System.out.println("Ошибка при запуске сервера.");
@@ -81,11 +79,11 @@ public class Server {
 
 
     public synchronized void subscribe(ClientHandler clientHandler) {
-
         clients.add(clientHandler);
     }
 
     public synchronized void unsubscribe(ClientHandler clientHandler) {
+
         clients.remove(clientHandler);
     }
 }

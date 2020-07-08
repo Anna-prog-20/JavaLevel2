@@ -20,7 +20,6 @@ public class Client extends JFrame {
     private JTextField msgInputField,loginField,passField;
     private JTextArea chatArea;
 
-    private long a,time;
     private String incomeMessage="";
 
     public static void main(String[] args) {
@@ -59,45 +58,25 @@ public class Client extends JFrame {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        a=System.currentTimeMillis()/1000L;
             new Thread(new Runnable() {
             @Override
             public void run() {
-                        time=System.currentTimeMillis()/1000L-a;
-
-                                new Thread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        while (time>=0) {
-                                            time = System.currentTimeMillis() / 1000L - a;
-                                            if (time>120&!incomeMessage.startsWith("/authok")){
-                                                Client.super.dispose();
-                                                break;
-                                            }
-                                        }
-                                    }
-                                }).start();
-                                new Thread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        while (true) {
+                                        while (!socket.isClosed()) {
                                             try {
-                                                if (time>120) break;
+                                                    incomeMessage = in.readUTF();
+                                                            if (incomeMessage.startsWith("/authok")) {
+                                                                chatArea.append("Вы успешно авторизовались!");
+                                                                chatArea.append("\n");
+                                                                break;
+                                                            }
+                                                            chatArea.append(incomeMessage);
+                                                            chatArea.append("\n");
 
-                                                incomeMessage = in.readUTF();
-                                                if (incomeMessage.startsWith("/authok")) {
-                                                    chatArea.append("Вы успешно авторизовались!");
-                                                    chatArea.append("\n");
-                                                    break;
-                                                }
-
-                                                chatArea.append(incomeMessage);
-                                                chatArea.append("\n");
                                             } catch (IOException e) {
                                                 e.printStackTrace();
                                             }
                                         }
-                                        while (true) {
+                                        while (!socket.isClosed()) {
                                             try {
                                                 incomeMessage = in.readUTF();
                                                 if (incomeMessage.equalsIgnoreCase("/end")) {
@@ -107,11 +86,8 @@ public class Client extends JFrame {
                                                 chatArea.append("\n");
                                             }catch (IOException e){e.printStackTrace();}
                                         }
-                                    }
-                                }).start();
-            }
+             }
         }).start();
-
     }
 
     public void send() {
@@ -229,15 +205,13 @@ public class Client extends JFrame {
     }
 
         public void close() {
-
         try {
             in.close();
             out.close();
             socket.close();
         } catch (IOException e) {
-            //e.printStackTrace();
+            e.printStackTrace();
         }
-            //super.dispose();
     }
 
 }

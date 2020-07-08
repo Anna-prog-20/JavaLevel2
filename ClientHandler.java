@@ -11,6 +11,8 @@ public class ClientHandler{
     private DataOutputStream out;
     private String name;
 
+    private long a;
+    private boolean timeIsOver=false;
 
     public ClientHandler(Server server, Socket socket) {
         try {
@@ -26,8 +28,10 @@ public class ClientHandler{
                     @Override
                     public void run() {
                         try {
-                            doAuth();
-                            readMessage();
+                            if (timeIsOver==false) {
+                                doAuth();
+                                readMessage();
+                            }
 
                         } catch (IOException e) {
                             e.printStackTrace();
@@ -49,21 +53,30 @@ public class ClientHandler{
     }
 
     public void doAuth() throws IOException {
-        //long a=System.currentTimeMillis()/1000L;
-        String str="";
-        while (true) {
-            str = in.readUTF();
+        a=System.currentTimeMillis()/1000L;
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (!timeIsOver)
+                if (System.currentTimeMillis()/1000L-a>120) {
+                    timeIsOver = true;
+                }
+            }
+        }).start();
 
-            if (str.startsWith("/auth")) {
+        String str="";
+        while (timeIsOver==false) {
+            str = in.readUTF();
+            if (str.startsWith("/auth")&timeIsOver==false) {
                 String[] parts = str.split("\\s");
                 String nickname = server.getAuthService().getNickByLoginAndPass(parts[1], parts[2]);
                 if (nickname != null) {
-                    if (server.isNickFree(nickname)) {
+                    if (server.isNickFree(nickname) & timeIsOver == false) {
                         sendMessage("/authok " + nickname);
                         name = nickname;
                         server.broadcastMessage(name + " зашел в чат.");
                         server.subscribe(this);
-                        return;
+                        break;
                     } else {
                         sendMessage(String.format("Клиент с ником [%s] уже используется", nickname));
                     }
@@ -72,6 +85,14 @@ public class ClientHandler{
                 }
             }
         }
+        if (timeIsOver==true) {
+            JDialog dialog=new JDialog();
+            dialog.setAlwaysOnTop(true);
+            JOptionPane.showMessageDialog(dialog, "Время ожидания вышло!");
+           closeConnection();
+        }
+
+
     }
 
     // Отправка сообщений обратно клиенту
@@ -85,7 +106,7 @@ public class ClientHandler{
 
     public void readMessage() throws IOException {
         while (true) {
-            String strFromClient = in.readUTF();
+           String strFromClient = in.readUTF();
             if (strFromClient.startsWith("/")) {
                 if (strFromClient.equals("/end")) {
                     break;

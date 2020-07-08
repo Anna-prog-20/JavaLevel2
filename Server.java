@@ -33,7 +33,8 @@ public class Server {
             }
         } catch (IOException e) {
             System.out.println("Ошибка при запуске сервера.");
-        } finally {
+        }
+        finally {
             if (authService != null) {
                 authService.stop();
             }
@@ -50,6 +51,7 @@ public class Server {
     }
 
     public synchronized boolean isNickFree(String nickname) {
+
         return !isNickBusy(nickname);
     }
 

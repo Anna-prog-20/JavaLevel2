@@ -22,8 +22,6 @@ public class ClientHandler{
             this.out = new DataOutputStream(socket.getOutputStream());
             this.name = "";
 
-
-
                 new Thread(new Runnable() {
                     @Override
                     public void run() {

@@ -21,6 +21,8 @@ public class Client extends JFrame {
     private JTextArea chatArea;
 
     private String incomeMessage="";
+    private String myNick="";
+
 
     public static void main(String[] args) {
         new Thread(new Runnable() {
@@ -61,33 +63,41 @@ public class Client extends JFrame {
             new Thread(new Runnable() {
             @Override
             public void run() {
-                                        while (!socket.isClosed()) {
-                                            try {
-                                                    incomeMessage = in.readUTF();
-                                                            if (incomeMessage.startsWith("/authok")) {
-                                                                chatArea.append("Вы успешно авторизовались!");
-                                                                chatArea.append("\n");
-                                                                break;
-                                                            }
-                                                            chatArea.append(incomeMessage);
-                                                            chatArea.append("\n");
-
-                                            } catch (IOException e) {
-                                                e.printStackTrace();
-                                            }
-                                        }
-                                        while (!socket.isClosed()) {
-                                            try {
-                                                incomeMessage = in.readUTF();
-                                                if (incomeMessage.equalsIgnoreCase("/end")) {
-                                                    break;
-                                                }
-                                                chatArea.append(incomeMessage);
-                                                chatArea.append("\n");
-                                            }catch (IOException e){e.printStackTrace();}
-                                        }
+                try {
+                    doAuth();
+                    readMessage();
+                } catch (IOException e){
+                    //e.printStackTrace();
+                }
              }
         }).start();
+    }
+
+    public void doAuth() throws IOException{
+
+        while (!socket.isClosed())  {
+            incomeMessage = in.readUTF();
+                if (incomeMessage.startsWith("/authok")) {
+                    myNick =incomeMessage.split("\\s")[1];
+                    setTitle("Клиент - "+myNick);
+                    chatArea.append("Вы успешно авторизовались под ником: "+myNick);
+                    chatArea.append("\n");
+                    break;
+                }
+                chatArea.append(incomeMessage);
+                chatArea.append("\n");
+
+        }
+    }
+    public void readMessage() throws IOException {
+        while (!socket.isClosed()) {
+                incomeMessage = in.readUTF();
+                if (incomeMessage.equalsIgnoreCase("/end")) {
+                    break;
+                }
+                chatArea.append(incomeMessage);
+                chatArea.append("\n");
+        }
     }
 
     public void send() {
@@ -209,8 +219,9 @@ public class Client extends JFrame {
             in.close();
             out.close();
             socket.close();
+            System.out.println(String.format("Клиент [%s] отключен...",myNick));
         } catch (IOException e) {
-            e.printStackTrace();
+            //e.printStackTrace();
         }
     }
 

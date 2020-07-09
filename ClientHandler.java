@@ -32,8 +32,9 @@ public class ClientHandler{
                             }
 
                         } catch (IOException e) {
-                            e.printStackTrace();
-                        } finally {
+                            //e.printStackTrace();
+                        }
+                        finally {
                             closeConnection();
                         }
                     }
@@ -128,9 +129,11 @@ public class ClientHandler{
             in.close();
             out.close();
             socket.close();
+            System.out.println("Клиент отключен...");
         } catch (IOException e) {
-            e.printStackTrace();
+//            e.printStackTrace();
         }
     }
+
 
 }
